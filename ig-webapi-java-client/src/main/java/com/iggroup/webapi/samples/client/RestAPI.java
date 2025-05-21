@@ -1,5 +1,6 @@
 package com.iggroup.webapi.samples.client;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.iggroup.webapi.samples.client.rest.*;
 import com.iggroup.webapi.samples.client.rest.dto.application.disable.updateApplicationV1.UpdateApplicationV1Response;
 import com.iggroup.webapi.samples.client.rest.dto.application.getApplicationsV1.GetApplicationsV1ResponseItem;
@@ -78,21 +79,22 @@ import com.iggroup.webapi.samples.client.rest.dto.workingorders.otc.updateOTCWor
 import com.iggroup.webapi.samples.client.rest.dto.workingorders.otc.updateOTCWorkingOrderV1.UpdateOTCWorkingOrderV1Response;
 import com.iggroup.webapi.samples.client.rest.dto.workingorders.otc.updateOTCWorkingOrderV2.UpdateOTCWorkingOrderV2Request;
 import com.iggroup.webapi.samples.client.rest.dto.workingorders.otc.updateOTCWorkingOrderV2.UpdateOTCWorkingOrderV2Response;
+import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.apache.http.HttpResponse;
-import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.Arrays;
 
 @Service
 public class RestAPI extends AbstractService {
 
 @Autowired
+@Lazy
 AuthenticationService authenticationService;
 
 public AuthenticationResponseAndConversationContext createSession(CreateSessionV2Request authenticationRequest, String apiKey, boolean encrypted) {
@@ -210,7 +212,7 @@ public UpdateActiveAccountV1Response updateActiveAccountV1(ConversationContext c
 /*
 Creates an OTC position.
 */
-public CreateOTCPositionV1Response createOTCPositionV1(ConversationContext conversationContext, CreateOTCPositionV1Request request) throws Exception {
+public CreateOTCPositionV1Response createOTCPositionV1(ConversationContext conversationContext, CreateOTCPositionV1Request request) {
   String uri = "/positions/otc";
   HttpEntity<?> requestEntity = buildHttpEntity(conversationContext, request, "1");
   ResponseEntity<CreateOTCPositionV1Response> response = restTemplate.exchange(getIGApiDomainURL() + addIGApiLightDarkCluster(uri), HttpMethod.POST, requestEntity, CreateOTCPositionV1Response.class);
@@ -306,7 +308,7 @@ public GetPositionsV1Response getPositionsV1(ConversationContext conversationCon
 /*
 Returns all open positions for the active account.
 */
-public GetPositionsV2Response getPositionsV2(ConversationContext conversationContext) throws Exception {
+public GetPositionsV2Response getPositionsV2(ConversationContext conversationContext)  {
   String uri = "/positions";
   HttpEntity<?> requestEntity = buildHttpEntity(conversationContext, null, "2");
   ResponseEntity<GetPositionsV2Response> response = restTemplate.exchange(getIGApiDomainURL() + addIGApiLightDarkCluster(uri), HttpMethod.GET, requestEntity, GetPositionsV2Response.class);
@@ -587,7 +589,7 @@ public GetActivityHistoryV3Response getActivityHistoryV3(ConversationContext con
 /*
 Returns all top-level nodes (market categories) in the market navigation hierarchy.
 */
-public GetMarketNavigationRootV1Response getMarketNavigationRootV1(ConversationContext conversationContext) throws Exception {
+public GetMarketNavigationRootV1Response getMarketNavigationRootV1(ConversationContext conversationContext)  {
   String uri = "/marketnavigation";
   HttpEntity<?> requestEntity = buildHttpEntity(conversationContext, null, "1");
   ResponseEntity<GetMarketNavigationRootV1Response> response = restTemplate.exchange(getIGApiDomainURL() + addIGApiLightDarkCluster(uri), HttpMethod.GET, requestEntity, GetMarketNavigationRootV1Response.class);
@@ -660,7 +662,7 @@ public GetRelatedClientSentimentV1Response getRelatedClientSentimentV1(Conversat
 /*
 Returns the details of the given market
 */
-public GetMarketDetailsV1Response getMarketDetailsV1(ConversationContext conversationContext, String epic) throws Exception {
+public GetMarketDetailsV1Response getMarketDetailsV1(ConversationContext conversationContext, String epic)  {
   String uri = "/markets/{epic}";
   uri = uri.replace("{epic}", epic==null?"":epic);
   HttpEntity<?> requestEntity = buildHttpEntity(conversationContext, null, "1");
@@ -716,7 +718,7 @@ public GetMarketDetailsListV2Response getMarketDetailsListV2(ConversationContext
 /*
 Returns a list of accounts belonging to the logged-in client.
 */
-public GetAccountsV1Response getAccountsV1(ConversationContext conversationContext) throws Exception {
+public GetAccountsV1Response getAccountsV1(ConversationContext conversationContext)  {
   String uri = "/accounts";
   HttpEntity<?> requestEntity = buildHttpEntity(conversationContext, null, "1");
   ResponseEntity<GetAccountsV1Response> response = restTemplate.exchange(getIGApiDomainURL() + addIGApiLightDarkCluster(uri), HttpMethod.GET, requestEntity, GetAccountsV1Response.class);

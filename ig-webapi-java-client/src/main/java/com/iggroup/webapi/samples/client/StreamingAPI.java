@@ -1,7 +1,10 @@
 package com.iggroup.webapi.samples.client;
 
 
-import com.iggroup.webapi.samples.client.rest.*;
+import com.iggroup.webapi.samples.client.rest.Constants;
+import com.iggroup.webapi.samples.client.rest.ConversationContext;
+import com.iggroup.webapi.samples.client.rest.ConversationContextV2;
+import com.iggroup.webapi.samples.client.rest.ConversationContextV3;
 import com.iggroup.webapi.samples.client.rest.dto.session.getSessionV1.GetSessionV1Response;
 import com.iggroup.webapi.samples.client.streaming.ConnectionListenerAdapter;
 import com.iggroup.webapi.samples.client.streaming.HandyTableListenerAdapter;
@@ -72,20 +75,23 @@ public class StreamingAPI {
 
 	public ConnectionListener connect(String username,
 												 ConversationContext conversationContext,
-												 String lightstreamerEndpoint) throws Exception {
-		return connect(username, conversationContext, PasswordStrategy.CLIENT, lightstreamerEndpoint);
+												 String lightstreamerEndpoint,
+												 ConnectionListenerAdapter connectionListenerAdapter) throws Exception {
+		return connect(username, conversationContext, PasswordStrategy.CLIENT, lightstreamerEndpoint, connectionListenerAdapter);
 	}
 
 	public ConnectionListener connectVendor(String username,
 												 ConversationContext conversationContext,
-												 String lightstreamerEndpoint) throws Exception {
-		return connect(username, conversationContext, PasswordStrategy.VENDOR, lightstreamerEndpoint);
+												 String lightstreamerEndpoint,
+												 ConnectionListenerAdapter connectionListenerAdapter) throws Exception {
+		return connect(username, conversationContext, PasswordStrategy.VENDOR, lightstreamerEndpoint, connectionListenerAdapter);
 	}
 
 	private ConnectionListener connect(String username,
 												 ConversationContext conversationContext,
 												 PasswordStrategy passwordStrategy,
-												 String lightstreamerEndpoint) throws Exception {
+												 String lightstreamerEndpoint,
+												 ConnectionListenerAdapter connectionListenerAdapter) throws Exception {
 
 		lsClient = new LSClient();
 		ConnectionInfo connectionInfo = new ConnectionInfo();
@@ -93,11 +99,10 @@ public class StreamingAPI {
 		connectionInfo.password = passwordStrategy.get(conversationContext);
 		connectionInfo.pushServerUrl = lightstreamerEndpoint;
 
-		final ConnectionListenerAdapter adapter = new ConnectionListenerAdapter();
 
-		lsClient.openConnection(connectionInfo, adapter);
+		lsClient.openConnection(connectionInfo, connectionListenerAdapter);
 
-		return adapter;
+		return connectionListenerAdapter;
 	}
 
 	public void disconnect() {
@@ -133,20 +138,24 @@ public class StreamingAPI {
 	}
 
 	public HandyTableListenerAdapter subscribeForAccountBalanceInfo(
-			String accountId, HandyTableListenerAdapter adapter)
-			throws Exception {
-		String subscriptionKey = ACCOUNT_BALANCE_INFO_PATTERN.replace(
-				"{accountId}", accountId);
+			String accountId, HandyTableListenerAdapter adapter) {
+		try{
+			String subscriptionKey = ACCOUNT_BALANCE_INFO_PATTERN.replace(
+					"{accountId}", accountId);
 
-		ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(
-				new String[]{subscriptionKey}, "MERGE", new String[]{"PNL",
-						"DEPOSIT", "USED_MARGIN", "AMOUNT_DUE",
-						"AVAILABLE_CASH"}, true);
+			ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(
+					new String[]{subscriptionKey}, "MERGE", new String[]{"PNL",
+					"DEPOSIT", "USED_MARGIN", "AMOUNT_DUE",
+					"AVAILABLE_CASH"}, true);
 
-		final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(
-				extendedTableInfo, adapter, false);
-		adapter.setSubscribedTableKey(subscribedTableKey);
-		return adapter;
+			final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(
+					extendedTableInfo, adapter, false);
+			adapter.setSubscribedTableKey(subscribedTableKey);
+			return adapter;
+		}catch (Exception e){
+			throw new RuntimeException("Error",e);
+		}
+
 	}
 
 	public HandyTableListenerAdapter subscribeForMarket(String epic,
@@ -163,14 +172,19 @@ public class StreamingAPI {
 		return adapter;
 	}
 
-	public HandyTableListenerAdapter subscribeForMarket(String epic, HandyTableListenerAdapter adapter, String... fields) throws Exception {
-		String subscriptionKey = MARKET_L1_PATTERN.replace("{epic}", epic);
+	public HandyTableListenerAdapter subscribeForMarket(String epic, HandyTableListenerAdapter adapter, String... fields) {
+		try {
 
-		ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(new String[] { subscriptionKey }, "MERGE", fields, true);
+			String subscriptionKey = MARKET_L1_PATTERN.replace("{epic}", epic);
 
-		final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(extendedTableInfo, adapter, false);
-		adapter.setSubscribedTableKey(subscribedTableKey);
-		return adapter;
+			ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(new String[]{subscriptionKey}, "MERGE", fields, true);
+
+			final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(extendedTableInfo, adapter, false);
+			adapter.setSubscribedTableKey(subscribedTableKey);
+			return adapter;
+		} catch (Exception e) {
+			throw new RuntimeException("Error", e);
+		}
 	}
 
 	public HandyTableListenerAdapter subscribeForB2CSprintMarket(String epic,
@@ -201,16 +215,21 @@ public class StreamingAPI {
 
 
 	public HandyTableListenerAdapter subscribeForOPUs(String accountId,
-			HandyTableListenerAdapter adapter) throws Exception {
-		String tradeKey = TRADE_PATTERN.replace("{accountId}", accountId);
+			HandyTableListenerAdapter adapter)  {
+		try{
+			String tradeKey = TRADE_PATTERN.replace("{accountId}", accountId);
 
-		ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(
-				new String[]{tradeKey}, "DISTINCT", new String[]{"OPU"}, false);
+			ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(
+					new String[]{tradeKey}, "DISTINCT", new String[]{"OPU"}, false);
 
-		final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(
-				extendedTableInfo, adapter, false);
-		adapter.setSubscribedTableKey(subscribedTableKey);
-		return adapter;
+			final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(
+					extendedTableInfo, adapter, false);
+			adapter.setSubscribedTableKey(subscribedTableKey);
+			return adapter;
+		}catch (Exception e){
+			throw new RuntimeException("Error",e);
+		}
+
 	}
 
 	public HandyTableListenerAdapter subscribeForWOUs(String accountId,
@@ -227,18 +246,23 @@ public class StreamingAPI {
 	}
 
 	public HandyTableListenerAdapter subscribeForChartTicks(String epic,
-			HandyTableListenerAdapter adapter) throws Exception {
-		String subscriptionKey = CHART_TICK_PATTERN.replace("{epic}", epic);
+			HandyTableListenerAdapter adapter) {
+		try{
+			String subscriptionKey = CHART_TICK_PATTERN.replace("{epic}", epic);
 
-		ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(
-				new String[]{subscriptionKey}, "DISTINCT", new String[]{"BID",
-						"OFR", "LTP", "LTV", "UTM", "DAY_OPEN_MID",
-						"DAY_PERC_CHG_MID", "DAY_HIGH", "DAY_LOW"}, true);
+			ExtendedTableInfo extendedTableInfo = new ExtendedTableInfo(
+					new String[]{subscriptionKey}, "DISTINCT", new String[]{"BID",
+					"OFR", "LTP", "LTV", "UTM", "DAY_OPEN_MID",
+					"DAY_PERC_CHG_MID", "DAY_HIGH", "DAY_LOW"}, true);
 
-		final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(
-				extendedTableInfo, adapter, false);
-		adapter.setSubscribedTableKey(subscribedTableKey);
-		return adapter;
+			final SubscribedTableKey subscribedTableKey = lsClient.subscribeTable(
+					extendedTableInfo, adapter, false);
+			adapter.setSubscribedTableKey(subscribedTableKey);
+			return adapter;
+		}catch (Exception e){
+			throw new RuntimeException("Error",e);
+		}
+
 	}
 
 	public HandyTableListenerAdapter subscribeForChartCandles(String epic,
